@@ -1,0 +1,172 @@
+#! /bin/bash
+
+#version 0.1   01.10.07 -- added --subject
+#version 0.1.1 01.10.07 -- added --list
+#version 0.2   02.10.07 -- added --add option
+#version 0.3   10.10.07 -- allowing short opts
+#version 0.4   18.10.07 -- removed string bug in short opts
+#version 0.5   10.01.08 -- added --removeme --addme
+#version 0.6   06.02.08 -- added --test and make it work with special character in stdin
+#version 0.7   20.02.08 -- added --forbit
+#version 0.7.1 16.04.08 -- better version system
+#version 0.8   11.06.08 -- changed sendername
+#version 0.8.1 08.04.09 -- more forbit people + footer
+#version 0.8.2 09.04.09 -- fixed typos
+#version 0.8.3 30.04.09 -- more forgit
+#version 0.8.4 15.05.09 -- added --topic
+#version 0.8.5 20.05.09 -- added space in data readin
+#version 0.8.6 03.11.09 -- update forbit
+
+usage="Usage: ${0##*/} [OPTIONS] TIME"
+listname=".lunch"
+defaultsubject="Lunch at "
+list="no"
+msg=""
+domain="@mpip-mainz.mpg.de"
+towho=""
+liste=""
+test="no"
+forbidden="bereau bohlius boncina engin galbis hessb herbers hueck jonglee lambeth marcon minoia muellerm reynolds uschille vettorel villa"
+sendername="${USER}$domain"
+
+help () {
+  cat << eof
+Send a mail to user with a $listname file in their home
+$usage
+
+OPTIONS:
+-s, --subject TEXT  Change subject of the mail
+                    Default: "$defaultsubject TIME"
+-a, --add    ADRESS Also send email to ADRESS (may multiple)
+                    "$domain" will be added, if no @ given
+    --forbit USER   Remove USER from lunchmail (may multiple)
+                    Default: "$forbidden"
+    --topic TOPIC   Change the file to search for
+                    Default: "${listname#.}"
+-r, --reason REASON Give a reason
+    --addme         Creates $listname for you
+    --removeme      Removes $listname for you
+    --test          Will send the mail ONLY to you
+-l, --list          Show list of user and exit
+    --all           Reset forbit
+-h, --help          Show this help
+-v, --version       Show version
+
+Examples:  ${0##*/} 12:00
+           essen | ${0##*/} 12:00
+           ${0##*/} -r "Martin is hungry" 11:00
+           ${0##*/} -s "Cafeteria at 11:30" -a stuehn -a abc@abc.com
+
+Send bugs and comment to junghans@mpip-mainz.mpg.de
+eof
+}
+
+while [ "${1#-}" != "$1" ]; do
+ if [ "${1#--}" = "$1" ] && [ -n "${1:2}" ]; then
+    if [ "${1#-[ars]}" != "${1}" ]; then
+       set -- "${1:0:2}" "${1:2}" "${@:2}"
+    else
+       set -- "${1:0:2}" "-${1:2}" "${@:2}"
+    fi
+ fi
+ case $1 in
+   -s | --subject)
+    subject="$2"
+    shift 2;;
+   -r | --reason)
+    msg="REASON: $2\n\n"
+    shift 2;;
+   -a | --add)
+    if [ -z "${2//*@*}" ]; then
+       user="$2"
+    else
+       user="${2}${domain}"
+    fi
+    towho="$towho ${user}"
+    liste="${liste}\n${user}"
+    shift 2;;
+   --all)
+    forbidden=""
+    shift 1;;
+   --forbit)
+    forbidden="$forbidden $2"
+    shift 2;;
+   --topic)
+    listname=".${2}"
+    shift 2;;
+   -l | --list)
+    list="yes"
+    shift ;;
+   --addme)
+    touch ~/${listname}
+    exit 0;;
+   --removeme)
+    rm -f ~/${listname}
+    exit 0;;
+   --test)
+    test="yes"
+    shift ;;
+   -h | --help)
+    help
+    exit 0;;
+   --hg)
+    echo "${0##*/}: $(sed -ne 's/^#version.* -- \(.*$\)/\1/p' $0 | sed -n '$p')" 
+    exit 0;;
+   -v | --version)
+    echo "${0##*/}", $(sed -ne 's/^#\(version.*\) -- .*$/\1/p' $0 | sed -n '$p') by C. Junghans
+    exit 0;;
+  *)
+   echo "Unknown option '$1'"
+   exit 1
+   shift ;;
+ esac
+done
+
+if [ "$list" = "no" ] && [ -z "$subject" ]; then
+   if [ -z "$1" ]; then
+      echo ${0##*/} need at least one argument \(the time\)
+      echo try: ${0##*/} --help
+      exit
+   else
+      subject="${defaultsubject}$1"
+      shift
+   fi
+fi
+
+if [ "$list" = "yes" ]; then
+   echo Members of the ${0##*/} list:
+fi
+for user in $(ls /people/thnfs/homes); do
+  if [ -n "${forbidden//*${user}*}" ] && [ -e "/people/thnfs/homes/$user/$listname" ]; then
+    towho="$towho ${user}${domain}"
+    liste="${liste}\n${user}${domain}"
+    if [ "$list" = "yes" ]; then
+       echo $user
+    fi
+  fi
+done
+if [ "$list" = "yes" ]; then
+   exit
+fi
+
+if [ -z "$towho" ]; then
+  echo Nobody with $listname file found !
+  exit
+fi
+
+echo Type in some Message \(end with CRTL-D\):
+while read -r; do
+  msg="${msg}${REPLY} \n"
+done
+
+#add footer
+msg="${msg}---------------------------------------------\nThis is $($0 -v)\n"
+
+echo -n Sending email to:
+echo -e "$liste"
+if [ "$test" = "yes" ]; then
+   towho="${USER}${domain}"
+   echo ONLY TESTING \-\> Sending mail to $towho
+fi
+echo -e "$msg" | mail -r $sendername -s "$subject" $towho
+echo Done

@@ -1,0 +1,102 @@
+#! /usr/bin/perl -W
+# show meals of the day
+# by C.Junghans and others
+
+#version 0.8,   10.10.07 -- added better short opts
+#version 0.8.1, 06.02.08 -- remove base name function
+#version 0.9,   09.09.09 -- major rework
+
+use strict;
+use LWP::Simple;
+
+$ENV{'http_proxy'} = 'http://www-proxy.mpip-mainz.mpg.de:8080';
+$_=$0;
+s#^.*/##;
+my $progname=$_;
+my $site="http://www.studentenwerk-mainz.de/download/speiseplan_html.html";
+my $towho=undef;
+my $usermail=$ENV{'USER'}.'@mpip-mainz.mpg.de';
+my @times= localtime(time);
+my $date=sprintf("%02i.%02i.%04i",$times[3],$times[4]+1,$times[5]+1900);
+my $endpattern='Beilagen';
+
+while ((defined ($ARGV[0])) and ($ARGV[0] =~ /^-./))
+{
+  if (($ARGV[0] !~ /^--/) and (length($ARGV[0])>2)){
+    $_=shift(@ARGV);
+    if ( $_ =~ /^-[s]/ ) {
+      unshift(@ARGV,substr($_,0,2),substr($_,2));
+    }
+    else{
+      unshift(@ARGV,substr($_,0,2),"-".substr($_,2));
+    }
+  }
+  if (($ARGV[0] eq "-h") or ($ARGV[0] eq "--help"))
+  {
+    print <<EOH;
+Show meal of the day! (from $site)
+
+Options:
+-m               Send plan to $usermail
+                 usefull in crontab
+-s, --send MAIL  Send plan to MAIL
+-v, --version    Prints version
+-h, --help       Show this help
+
+Send bugs and comments to junghans[at]mpip-mainz.mpg.de
+EOH
+    exit;
+  }
+  elsif ($ARGV[0] eq "-m")
+  {
+    shift(@ARGV);
+    $towho=$usermail;
+  }
+  elsif (($ARGV[0] eq "-s") or ($ARGV[0] eq "--send"))
+  {
+    shift(@ARGV);
+    $towho=shift(@ARGV);
+  }
+  elsif (($ARGV[0] eq "-v") or ($ARGV[0] eq "--version"))
+  {
+    my $version=`perl -ne 'print "\$1\n" if /^#(version .*?) -- .*/' $0 | perl -ne 'print if eof'`;
+    chomp($version);
+    print "$progname, $version  by C. Junghans\n";
+    exit;
+  }
+  elsif ($ARGV[0] eq "--hg")
+  {
+    my $message=`perl -ne 'print "\$1\n" if /^#version .*? -- (.*)\$/' $0 | perl -ne 'print if eof'`;
+    chomp($message);
+    print "$progname: $message\n";
+    exit;
+  }
+  else
+  {
+    print "Unknow option '".$ARGV[0]."' ignored !\n";
+    shift(@ARGV);
+  }
+}
+
+if ($towho){
+  open(MAIL,"| mail -s \"essen\" $towho");
+  select(MAIL);
+}
+
+my $essen=get($site);
+$essen =~ s/<.*?>//sg;
+my @lines=split(/\n/,$essen);
+
+my $found=undef;
+print "\nMENSA\n-----\n\n";
+foreach (@lines){
+  s/\P{IsASCII}//g;
+  s/^\s*//;
+  last if ($found and /$endpattern/);
+  $found="yes" if ( /$date/ );
+  print "$_\n" if $found;
+}
+
+die "Date ($date) not found!\n" unless ($found);
+
+
