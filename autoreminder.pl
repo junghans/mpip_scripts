@@ -9,6 +9,7 @@
 #version 0.2.1, 09.09.09 -- fixed a typo
 #version 0.2.2, 30.09.09 -- only show websites of talks found in today mail 
 #version 0.2.3, 28.10.09 -- fix tab problem
+#version 0.2.4, 04.11.09 -- added homepage, --test option and updated help
 
 use strict;
 use LWP::Simple;
@@ -16,7 +17,7 @@ use LWP::Simple;
 $_=$0;
 s#^.*/##;
 my $progname=$_;
-my $usage="Usage: $progname [OPTIONS] FILE";
+my $usage="Usage: $progname [OPTIONS]";
 my @sites=("http://www.mpip-mainz.mpg.de/~peter/dates",
            "http://www.mpip-mainz.mpg.de/theory.html/seminar/group_seminar");
 
@@ -27,15 +28,16 @@ my @websites=("http://www.mpip-mainz.mpg.de/~poma/multiscale/mm-seminar.php",
 my $quiet=undef;
 my $sendermail='pdsoftie@mpip-mainz.mpg.de';
 my $sendername='"The AutoReminder <'.$sendermail.'>"';
-my $authormail='junghans@mpip-mainz.mpg.de';
-#my $towho='junghans@mpip-mainz.mpg.de';
 my $towho='ak_kremer@mpip-mainz.mpg.de';
+my $usermail="$ENV{USER}\@mpip-mainz.mpg.de";
+my $homepage='http://pckr99.mpip-mainz.mpg.de:1234/mpip_scripts';
 my $today_mode="no";
 my @times= localtime(time);
 my $time=$times[2]*60+$times[1];
 my $date=sprintf("%02i.%02i.%02i",$times[3],$times[4]+1,$times[5]-100);
 my $nicetime=sprintf("%02i:%02i",$times[2],$times[1]);
 my $subject;
+my $delta=15;
 
 sub parse_mm($$);
 sub parse_gs($$);
@@ -56,11 +58,22 @@ while ((defined ($ARGV[0])) and ($ARGV[0] =~ /^-./))
   if (($ARGV[0] eq "-h") or ($ARGV[0] eq "--help"))
   {
     print <<END;
-This is the autore script
+This is the autoreminder script.
 $usage
+
+By default it sends an email to $towho, if it finds a talk
+which is at maximum $delta min away.
+
+Use --today option to get an overview about all talks of the day.
+
+Websites checked by autoreminder:
+@websites
+
 OPTIONS:
     --today           Mail a summary of the talk today
     --stdout          Show mail on stdout, do NOT send it!
+    --test            See the email ONLY to you 
+                      ($usermail)
 -v, --version         Prints version
 -h, --help            Show this help message
 -q, --quiet           Do not show messages
@@ -97,6 +110,11 @@ END
     $today_mode="yes";
     shift(@ARGV);
   }
+  elsif ($ARGV[0] eq "--test")
+  {
+    $towho="$usermail";
+    shift(@ARGV);
+  }
   elsif ($ARGV[0] eq "--stdout")
   {
     $towho="STDOUT";
@@ -127,7 +145,7 @@ if ("$today_mode" eq "yes" ) {
   $subject="\"Todays talks\""
 }
 else {
-  $number=find_talk(15);
+  $number=find_talk($delta);
   defined($number) || exit;
   $subject="\"$seminarnames[$number] in $dtime minutes\"";
 }
@@ -171,8 +189,8 @@ Greetings,
 The AutoReminder
 
 ---------------------------------------------
-This is $version.
-Send bugs and comments to $authormail.
+I am $version.
+Visit my homepage $homepage.
 EOF
 
 if ("$towho" ne "STDOUT") {
