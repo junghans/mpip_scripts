@@ -10,6 +10,7 @@
 #version 0.2.2, 30.09.09 -- only show websites of talks found in today mail 
 #version 0.2.3, 28.10.09 -- fix tab problem
 #version 0.2.4, 04.11.09 -- added homepage, --test option and updated help
+#version 0.2.5, 06.11.09 -- added --date option 
 
 use strict;
 use LWP::Simple;
@@ -72,6 +73,7 @@ Websites checked by autoreminder:
 OPTIONS:
     --today           Mail a summary of the talk today
     --stdout          Show mail on stdout, do NOT send it!
+    --date XX.XX.XX   Change to date of the day
     --test            See the email ONLY to you 
                       ($usermail)
 -v, --version         Prints version
@@ -109,6 +111,12 @@ END
   {
     $today_mode="yes";
     shift(@ARGV);
+  }
+  elsif ($ARGV[0] eq "--date")
+  {
+    shift(@ARGV);
+    $date=shift(@ARGV);
+    die "Argument of date should have the form 'XX.XX.XX'" unless $date =~ /^\d\d\.\d\d\.\d\d$/;
   }
   elsif ($ARGV[0] eq "--test")
   {
