@@ -1,0 +1,10 @@
+#a sample crontab for the autoreminder
+#run crontab -e and add this lines
+
+SHELL=/bin/bash
+#add autoreminder path here
+PATH=$HOME/bin:/usr/bin:/usr/sbin:/sbin:/bin
+
+#min  hour  day  month  dow  command
+0  8     *    *      1-5  autoreminder.pl --today >>~/.logreminder 2>&1
+*/15  *     *    *      1-5  autoreminder.pl >>~/.logreminder 2>&1
