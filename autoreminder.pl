@@ -11,6 +11,7 @@
 #version 0.2.3, 28.10.09 -- fix tab problem
 #version 0.2.4, 04.11.09 -- added homepage, --test option and updated help
 #version 0.2.5, 06.11.09 -- added --date option 
+#version 0.2.6, 11.11.09 -- fixed help + parse_gs(NO SEMINAR)
 
 use strict;
 use LWP::Simple;
@@ -74,6 +75,7 @@ OPTIONS:
     --today           Mail a summary of the talk today
     --stdout          Show mail on stdout, do NOT send it!
     --date XX.XX.XX   Change to date of the day
+                      Default: today ($date)
     --test            See the email ONLY to you 
                       ($usermail)
 -v, --version         Prints version
@@ -92,7 +94,7 @@ END
   {
     my $version=`perl -ne 'print "\$1\n" if /^#(version .*?) -- .*/' $0 | perl -ne 'print if eof'`;
     chomp($version);
-    print "$progname, $version  by C. Junghans\n";
+    print "$progname, $version\n";
     exit;
   }
   elsif ($ARGV[0] eq "--hg")
@@ -257,10 +259,11 @@ sub parse_gs($$){
     my $line=$lines[$i];
     next unless ($line =~ /$date/);
     #add the next three line to string
-    $line .= "$lines[$i+1]"."$lines[$i+2]"."$lines[$i+3]";
+    $line .= " $lines[$i+1] "."$lines[$i+2] "."$lines[$i+3]";
     $i+=3;
     #strip html tags
     $line =~ s/<.*?>//g;
+    next if ( $line =~ /NO SEMINAR/);
     #remove space for end and beginnig
     $line =~ s/^\s*(.*?)\s*$/$1/;
     if ( $line =~ /^$date\s+(.*?)\s+\((.*?)\)$/ ){
