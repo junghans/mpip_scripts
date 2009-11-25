@@ -12,6 +12,7 @@
 #version 0.2.4, 04.11.09 -- added homepage, --test option and updated help
 #version 0.2.5, 06.11.09 -- added --date option 
 #version 0.2.6, 11.11.09 -- fixed help + parse_gs(NO SEMINAR)
+#version 0.2.7, 25.11.09 -- do not send email something if not parsed
 
 use strict;
 use LWP::Simple;
@@ -199,7 +200,7 @@ Greetings,
 The AutoReminder
 
 ---------------------------------------------
-I am $version.
+$version, written to inform $towho
 Visit my homepage $homepage.
 EOF
 
@@ -269,15 +270,15 @@ sub parse_gs($$){
     if ( $line =~ /^$date\s+(.*?)\s+\((.*?)\)$/ ){
       push(@speakers,$1);
       push(@topics,$2);
+      push(@seminarnames,"Group Seminar");
+      push(@seminartimes,"15:30");
+      push(@seminarnr,$_[1]);
+      $enable="yes";
     }
-    else {
-      push(@speakers,"Unknown");
-      push(@topics,"Unknown(Change the pattern in parse_gs in $progname");
-    }
-    push(@seminarnames,"Group Seminar");
-    push(@seminartimes,"15:30");
-    push(@seminarnr,$_[1]);
-    $enable="yes";
+    #else {
+    #  push(@speakers,"Unknown");
+    #  push(@topics,"Unknown(Change the pattern in parse_gs in $progname");
+    #}
   }
   return $enable;
 }
