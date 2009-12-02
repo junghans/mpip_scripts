@@ -13,6 +13,7 @@
 #version 0.2.5, 06.11.09 -- added --date option 
 #version 0.2.6, 11.11.09 -- fixed help + parse_gs(NO SEMINAR)
 #version 0.2.7, 25.11.09 -- do not send email something if not parsed
+#version 0.2.8, 02.12.09 -- strip non ASCI ASCII stuff in parse_gs
 
 use strict;
 use LWP::Simple;
@@ -264,10 +265,12 @@ sub parse_gs($$){
     $i+=3;
     #strip html tags
     $line =~ s/<.*?>//g;
+    #delete non-unicode characters
+    $line =~ s/\P{IsASCII}//g;
     next if ( $line =~ /NO SEMINAR/);
     #remove space for end and beginnig
     $line =~ s/^\s*(.*?)\s*$/$1/;
-    if ( $line =~ /^$date\s+(.*?)\s+\((.*?)\)$/ ){
+    if ( $line =~ /^$date\s*(.*?)\s*\((.*?)\)$/ ){
       push(@speakers,$1);
       push(@topics,$2);
       push(@seminarnames,"Group Seminar");
