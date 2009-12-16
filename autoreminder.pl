@@ -14,6 +14,7 @@
 #version 0.2.6, 11.11.09 -- fixed help + parse_gs(NO SEMINAR)
 #version 0.2.7, 25.11.09 -- do not send email something if not parsed
 #version 0.2.8, 02.12.09 -- strip non ASCI ASCII stuff in parse_gs
+#version 0.2.9, 16.12.09 -- fixes some pattern problem
 
 use strict;
 use LWP::Simple;
@@ -219,6 +220,7 @@ sub parse_mm($$){
   my $enable=undef;
   foreach (@lines) {
     next if /^#/;
+    next if /^\s*$/;
     my @parts=split(/\|/);
     #remove space from beginnig and end
     foreach (0..$#parts){$parts[$_]=~s/^\s*(.*?)\s*$/$1/;}
@@ -267,7 +269,7 @@ sub parse_gs($$){
     $line =~ s/<.*?>//g;
     #delete non-unicode characters
     $line =~ s/\P{IsASCII}//g;
-    next if ( $line =~ /NO SEMINAR/);
+    next if ( $line =~ /NO\W*SEMINAR/g);
     #remove space for end and beginnig
     $line =~ s/^\s*(.*?)\s*$/$1/;
     if ( $line =~ /^$date\s*(.*?)\s*\((.*?)\)$/ ){
