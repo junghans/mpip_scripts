@@ -16,6 +16,7 @@
 #version 0.8.4 15.05.09 -- added --topic
 #version 0.8.5 20.05.09 -- added space in data readin
 #version 0.8.6 03.11.09 -- update forbit
+#version 0.8.7 27.01.10 -- add --notime 
 
 usage="Usage: ${0##*/} [OPTIONS] TIME"
 listname=".lunch"
@@ -28,6 +29,13 @@ liste=""
 test="no"
 forbidden="bereau bohlius boncina engin galbis hessb herbers hueck jonglee lambeth marcon minoia muellerm reynolds uschille vettorel villa"
 sendername="${USER}$domain"
+homepage='http://pckr99.mpip-mainz.mpg.de:1234/mpip_scripts'
+check_time="yes"
+
+die() {
+  echo -e "$*"
+  exit 1
+}
 
 help () {
   cat << eof
@@ -44,6 +52,7 @@ OPTIONS:
     --topic TOPIC   Change the file to search for
                     Default: "${listname#.}"
 -r, --reason REASON Give a reason
+    --notime        Do not check if last argument is a time
     --addme         Creates $listname for you
     --removeme      Removes $listname for you
     --test          Will send the mail ONLY to you
@@ -88,6 +97,9 @@ while [ "${1#-}" != "$1" ]; do
    --all)
     forbidden=""
     shift 1;;
+   --notime)
+    check_time="no"
+    shift 1;;
    --forbit)
     forbidden="$forbidden $2"
     shift 2;;
@@ -116,25 +128,22 @@ while [ "${1#-}" != "$1" ]; do
     echo "${0##*/}", $(sed -ne 's/^#\(version.*\) -- .*$/\1/p' $0 | sed -n '$p') by C. Junghans
     exit 0;;
   *)
-   echo "Unknown option '$1'"
-   exit 1
+   die "Unknown option '$1'"
    shift ;;
  esac
 done
 
 if [ "$list" = "no" ] && [ -z "$subject" ]; then
-   if [ -z "$1" ]; then
-      echo ${0##*/} need at least one argument \(the time\)
-      echo try: ${0##*/} --help
-      exit
-   else
-      subject="${defaultsubject}$1"
-      shift
-   fi
+  [ -z "$1" ] && die "${0##*/} need at least one argument (the time)\ntry: ${0##*/} --help"
+  [ "$check_time" = "yes" ] && [ -n "${1//[0-9][0-9]:[0-9][0-9]}" ] && \
+    die "Argument 1 should have the form of a time (XX:XX), disable it --notime option"
+  subject="${defaultsubject}$1"
+  shift
 fi
 
 if [ "$list" = "yes" ]; then
-   echo Members of the ${0##*/} list:
+   echo "Members of the ${0##*/} list:"
+
 fi
 for user in $(ls /people/thnfs/homes); do
   if [ -n "${forbidden//*${user}*}" ] && [ -e "/people/thnfs/homes/$user/$listname" ]; then
@@ -146,13 +155,10 @@ for user in $(ls /people/thnfs/homes); do
   fi
 done
 if [ "$list" = "yes" ]; then
-   exit
+   exit 0
 fi
 
-if [ -z "$towho" ]; then
-  echo Nobody with $listname file found !
-  exit
-fi
+[ -z "$towho" ] && die "Nobody with $listname file found !"
 
 echo Type in some Message \(end with CRTL-D\):
 while read -r; do
@@ -161,6 +167,7 @@ done
 
 #add footer
 msg="${msg}---------------------------------------------\nThis is $($0 -v)\n"
+msg="${msg}Homepage: $homepage\n"
 
 echo -n Sending email to:
 echo -e "$liste"
