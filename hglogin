@@ -1,7 +1,12 @@
 #! /bin/bash
 
-host="junghans@login.mpip-mainz.mpg.de"
+host="${USER}@login.mpip-mainz.mpg.de"
 repobase="hgrepos"
+
+die() {
+  echo "$*" >&2
+  exit 1
+}
 
 if [ -z "$1" ]; then
    $0 --help
@@ -12,8 +17,8 @@ if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
    cat <<EOF
 Usage: ${0##*/} push|pull|clone|cloneto [name]
 
-This is wrapper to handle repo at ${host}.
-Subfulder is $repobase.
+This is wrapper to handle hg repos at ${host}.
+Subfuolder is $repobase.
 
 Operations: 
 push          push changes to $host
@@ -31,9 +36,9 @@ else
 fi
 
 if [ "$op" = "clone" ]; then
-   [[ -n "$2" ]] || { echo clone needs a name; exit 1; }
+   [[ -n "$2" ]] || die "clone needs a name"
 else
-   path=$(hg root) || exit 1
+   path=$(hg root) || die "Could not get (hg root) dir"
    cd $path
 fi
   
