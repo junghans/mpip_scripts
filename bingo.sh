@@ -4,10 +4,11 @@
 # junghans@mpip-mainz.mpg.de
 
 #version 0.1  22.12.09 -- initial version
+#version 0.2  23.06.10 -- fixed help
 
 usage="Usage: ${0##*/} quotefile"
 quiet="no"
-number=25
+number=20
 length=4
 debug="no"
 lpr="no"
@@ -23,12 +24,12 @@ qecho() {
 
 show_help () {
   cat << eof
-This is a skeleton script
+  This script created bingo sheets out of a file with one quote per line
 $usage
 OPTIONS:
--n NUMBER           Number of sheet to create
+-n NUMBER           Number of sheets to create
                     Default: $number
--l NUMBER           Length of the bingo
+-l NUMBER           Side length of the bingo square
                     Default: $length
 -q, --quiet         Be a little bit quiet
     --lpr           Print them later
@@ -46,8 +47,8 @@ eof
 
 while [ "${1#-}" != "$1" ]; do
  if [ "${1#--}" = "$1" ] && [ -n "${1:2}" ]; then
-    #short opt with arguments here: fc
-    if [ "${1#-[fc]}" != "${1}" ]; then
+    #short opt with arguments here: n,l
+    if [ "${1#-[nl]}" != "${1}" ]; then
        set -- "${1:0:2}" "${1:2}" "${@:2}"
     else
        set -- "${1:0:2}" "-${1:2}" "${@:2}"
