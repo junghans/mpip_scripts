@@ -4,17 +4,18 @@
 # junghans@mpip-mainz.mpg.de
 #
 #
-#version 0.1.5, 13.05.09 -- old version
-#version 0.2.0, 26.08.09 -- merge with seminarreminder.pl
-#version 0.2.1, 09.09.09 -- fixed a typo
-#version 0.2.2, 30.09.09 -- only show websites of talks found in today mail 
-#version 0.2.3, 28.10.09 -- fix tab problem
-#version 0.2.4, 04.11.09 -- added homepage, --test option and updated help
-#version 0.2.5, 06.11.09 -- added --date option 
-#version 0.2.6, 11.11.09 -- fixed help + parse_gs(NO SEMINAR)
-#version 0.2.7, 25.11.09 -- do not send email something if not parsed
-#version 0.2.8, 02.12.09 -- strip non ASCI ASCII stuff in parse_gs
-#version 0.2.9, 16.12.09 -- fixes some pattern problem
+#version 0.1.5,  13.05.09 -- old version
+#version 0.2.0,  26.08.09 -- merge with seminarreminder.pl
+#version 0.2.1,  09.09.09 -- fixed a typo
+#version 0.2.2,  30.09.09 -- only show websites of talks found in today mail
+#version 0.2.3,  28.10.09 -- fix tab problem
+#version 0.2.4,  04.11.09 -- added homepage, --test option and updated help
+#version 0.2.5,  06.11.09 -- added --date option
+#version 0.2.6,  11.11.09 -- fixed help + parse_gs(NO SEMINAR)
+#version 0.2.7,  25.11.09 -- do not send email something if not parsed
+#version 0.2.8,  02.12.09 -- strip non ASCII stuff in parse_gs
+#version 0.2.9,  16.12.09 -- fixes some pattern problem
+#version 0.2.10, 16.12.09 -- fixes help
 
 use strict;
 use LWP::Simple;
@@ -79,7 +80,7 @@ OPTIONS:
     --stdout          Show mail on stdout, do NOT send it!
     --date XX.XX.XX   Change to date of the day
                       Default: today ($date)
-    --test            See the email ONLY to you 
+    --test            See the email ONLY to you
                       ($usermail)
 -v, --version         Prints version
 -h, --help            Show this help message
@@ -151,7 +152,7 @@ my @enable;
 $enable[0]=parse_mm($sites[0],0);
 $enable[1]=parse_gs($sites[1],1);
 
-#exit if there is notthing to mail
+#exit if there is nothing to mail
 exit if ($#seminartimes < 0);
 
 if ("$today_mode" eq "yes" ) {
