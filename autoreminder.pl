@@ -274,6 +274,7 @@ sub parse_gs($$){
     #remove space for end and beginnig
     $line =~ s/^\s*(.*?)\s*$/$1/;
     if ( $line =~ /^$date\s*(.*?)\s*\((.*?)\)$/ ){
+      next if ( $1 =~ /tba/i );
       push(@speakers,$1);
       push(@topics,$2);
       push(@seminarnames,"Group Seminar");
