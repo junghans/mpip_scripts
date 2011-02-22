@@ -16,6 +16,7 @@
 #version 0.2.8,  02.12.09 -- strip non ASCII stuff in parse_gs
 #version 0.2.9,  16.12.09 -- fixes some pattern problem
 #version 0.2.10, 16.12.09 -- fixes help
+#version 0.2.11, 16.02.11 -- group seminar is gone
 
 use strict;
 use LWP::Simple;
@@ -24,11 +25,9 @@ $_=$0;
 s#^.*/##;
 my $progname=$_;
 my $usage="Usage: $progname [OPTIONS]";
-my @sites=("http://www.mpip-mainz.mpg.de/~peter/dates",
-           "http://www.mpip-mainz.mpg.de/theory.html/seminar/group_seminar");
+my @sites=("http://www.mpip-mainz.mpg.de/~peter/dates");
 
-my @websites=("http://www.mpip-mainz.mpg.de/~poma/multiscale/mm-seminar.php",
-              "http://www.mpip-mainz.mpg.de/theory.html/seminar/group_seminar");
+my @websites=("http://www.mpip-mainz.mpg.de/~poma/multiscale/mm-seminar.php");
 
 #Defaults
 my $quiet=undef;
@@ -46,7 +45,7 @@ my $subject;
 my $delta=15;
 
 sub parse_mm($$);
-sub parse_gs($$);
+#sub parse_gs($$);
 sub find_talk($);
 
 while ((defined ($ARGV[0])) and ($ARGV[0] =~ /^-./))
@@ -150,7 +149,7 @@ my $dtime;
 my @enable;
 
 $enable[0]=parse_mm($sites[0],0);
-$enable[1]=parse_gs($sites[1],1);
+#$enable[1]=parse_gs($sites[1],1);
 
 #exit if there is nothing to mail
 exit if ($#seminartimes < 0);
@@ -194,6 +193,7 @@ $websites[$seminarnr[$number]]
 EOF
 }
 
+print `/usr/bin/g_luck`;
 my $version=`$0 --version`;
 chomp($version);
 print <<EOF;
@@ -235,7 +235,7 @@ sub parse_mm($$){
     push(@speakers,$parts[2]);
     $parts[3] =~ s/\P{IsASCII}//g;
     push(@topics,$parts[3]);
-    push(@seminarnames,"Modeling Meeting");
+    push(@seminarnames,"Group Seminar");
     push(@seminarnr,$_[1]);
     $enable="yes";
   }
@@ -277,7 +277,7 @@ sub parse_gs($$){
       next if ( $1 =~ /tba/i );
       push(@speakers,$1);
       push(@topics,$2);
-      push(@seminarnames,"Group Seminar");
+      push(@seminarnames,"Old Group Seminar");
       push(@seminartimes,"15:30");
       push(@seminarnr,$_[1]);
       $enable="yes";
