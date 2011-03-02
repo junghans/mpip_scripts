@@ -97,7 +97,7 @@ for ((i=0;i<$number;i++)); do
 \pagestyle{empty}
 \noindent
 \begin{center}
-{\huge MMM Bingo}\\\\
+{\huge GS Bingo}\\\\
 {\small \today}\\\\
 \vspace{3cm}
 EOF
