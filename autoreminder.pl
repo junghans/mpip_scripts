@@ -18,6 +18,11 @@
 #version 0.2.10, 16.12.09 -- fixes help
 #version 0.2.11, 16.02.11 -- group seminar is gone
 
+#a sample crontab for the autoreminder
+#run crontab -e and add this lines (without leading #)
+#0  8     *    *      1-5  autoreminder.pl --today >>~/.logreminder 2>&1
+#*/15  *     *    *      1-5  autoreminder.pl >>~/.logreminder 2>&1
+
 use strict;
 use LWP::Simple;
 
