@@ -29,7 +29,7 @@ liste=""
 test="no"
 forbidden="bereau bohlius boncina engin galbis hessb herbers hueck jonglee lambeth lenzo marcon minoia muellerm nordqvis reynolds uschille vettorel villa"
 sendername="${USER}$domain"
-homepage='http://pckr99.mpip-mainz.mpg.de:1234/mpip_scripts'
+homepage='https://194.95.63.77/mpip_scripts/summary'
 check_time="yes"
 
 die() {
