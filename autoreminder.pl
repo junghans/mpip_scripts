@@ -17,6 +17,7 @@
 #version 0.2.9,  16.12.09 -- fixes some pattern problem
 #version 0.2.10, 16.12.09 -- fixes help
 #version 0.2.11, 16.02.11 -- group seminar is gone
+#version 0.3.0,  09.08.11 -- added remind_extra feature
 
 #a sample crontab for the autoreminder
 #run crontab -e and add this lines (without leading #)
@@ -39,6 +40,7 @@ my $quiet=undef;
 my $sendermail='pdsoftie@mpip-mainz.mpg.de';
 my $sendername='"The AutoReminder <'.$sendermail.'>"';
 my $towho='ak_kremer@mpip-mainz.mpg.de';
+my $remind_extra='nagata@mpip-mainz.mpg.de';
 my $usermail="$ENV{USER}\@mpip-mainz.mpg.de";
 my $homepage='https://thhg.mpip-mainz.mpg.de/mpip_scripts/summary';
 my $today_mode="no";
@@ -169,7 +171,7 @@ else {
 }
 
 if ("$towho" ne "STDOUT") {
-   open(MAIL,"| mail -r $sendername -s $subject $towho");
+   open(MAIL,"| mail -c $remind_extra -r $sendername -s $subject $towho");
    select(MAIL);
 }
 else{
