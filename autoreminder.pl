@@ -86,7 +86,7 @@ OPTIONS:
     --stdout          Show mail on stdout, do NOT send it!
     --date XX.XX.XX   Change to date of the day
                       Default: today ($date)
-    --test            See the email ONLY to you
+    --test            Send the email ONLY to you
                       ($usermail)
 -v, --version         Prints version
 -h, --help            Show this help message
